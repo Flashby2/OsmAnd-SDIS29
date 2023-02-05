@@ -601,24 +601,7 @@ public class MapActivityActions extends MapActions {
 					LiveUpdatesFragment.showInstance(mapActivity.getSupportFragmentManager(), null);
 					return true;
 				}));
-
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_TRAVEL_GUIDES_ID)
-				.setTitle(getString(R.string.shared_string_travel_guides) + " (Beta)")
-				.setIcon(R.drawable.ic_action_travel)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					MapActivity.clearPrevActivityIntent();
-					TravelHelper travelHelper = app.getTravelHelper();
-					travelHelper.initializeDataOnAppStartup();
-					if (!travelHelper.isAnyTravelBookPresent() && !travelHelper.getBookmarksHelper().hasSavedArticles()) {
-						WikivoyageWelcomeDialogFragment.showInstance(mapActivity.getSupportFragmentManager());
-					} else {
-						Intent intent = new Intent(mapActivity, WikivoyageExploreActivity.class);
-						intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-						mapActivity.startActivity(intent);
-					}
-					return true;
-				}));
-
+		
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_MEASURE_DISTANCE_ID)
 				.setTitleId(R.string.plan_route, mapActivity)
 				.setIcon(R.drawable.ic_action_plan_route)
