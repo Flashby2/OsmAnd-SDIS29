@@ -386,9 +386,9 @@ public class MapActivityActions extends MapActions {
 		if (showMenu) {
 			mapActivity.getMapRouteInfoMenu().setShowMenu(menuState);
 		}
-		if (!settings.SPEED_CAMERAS_ALERT_SHOWED.get()) {
+		/*if (!settings.SPEED_CAMERAS_ALERT_SHOWED.get()) {		Désactivation de la popup radar
 			SpeedCamerasBottomSheet.showInstance(mapActivity.getSupportFragmentManager(), null);
-		}
+		}*/
 	}
 
 	@Override
