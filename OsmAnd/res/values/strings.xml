@@ -2963,6 +2963,8 @@
     <string name="m_s">m/s</string>
     <string name="shared_string_trip_recording">Trip recording</string>
     <string name="shared_string_navigation">Navigation</string>
+    <string name="shared_string_navigation_firehouse">Naviguer vers caserne</string>
+    <string name="shared_string_navigation_hospital">Naviguer vers urgence</string>
     <string name="osmand_running_in_background">Run in background</string>
     <string name="gps_wake_up_timer">GPS wake-up interval</string>
     <string name="favourites_edit_dialog_title">Favorite info</string>

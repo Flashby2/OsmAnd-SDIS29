@@ -103,6 +103,7 @@ import net.osmand.plus.utils.AndroidUtils;
 import net.osmand.plus.utils.ColorUtilities;
 import net.osmand.plus.views.MapActions;
 import net.osmand.plus.views.layers.MapControlsLayer;
+import net.osmand.plus.views.layers.POIMapLayer;
 import net.osmand.plus.views.mapwidgets.configure.ConfigureScreenFragment;
 import net.osmand.plus.widgets.ctxmenu.ContextMenuAdapter;
 import net.osmand.plus.widgets.ctxmenu.ContextMenuListAdapter;
@@ -565,6 +566,36 @@ public class MapActivityActions extends MapActions {
 					}
 					return true;
 				}));
+
+		//Divider
+		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_DIVIDER_ID)
+				.setLayout(R.layout.drawer_divider));
+
+		optionsMenuHelper.addItem(new ContextMenuItem(null)
+				.setTitleId(R.string.shared_string_navigation_firehouse, mapActivity)
+				.setIcon(R.drawable.mm_amenity_fire_station)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_directions_open");
+					MapControlsLayer mapControlsLayer = mapActivity.getMapLayers().getMapControlsLayer();
+					if (mapControlsLayer != null) {
+						mapControlsLayer.doRoute();
+					}
+					return true;
+				}));
+
+
+		optionsMenuHelper.addItem(new ContextMenuItem(null)
+				.setTitleId(R.string.shared_string_navigation_hospital, mapActivity)
+				.setIcon(R.drawable.mm_healthcare)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_directions_open");
+					POIMapLayer mapControlsLayer = mapActivity.getMapLayers().getPoiMapLayer();
+					if (mapControlsLayer != null) {
+						//mapControlsLayer.collectObjectsFromPoint();
+					}
+					return true;
+				}));
+
 
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_CONFIGURE_MAP_ID)
 				.setTitleId(R.string.configure_map, mapActivity)
