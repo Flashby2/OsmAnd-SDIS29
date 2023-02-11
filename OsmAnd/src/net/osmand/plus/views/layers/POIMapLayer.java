@@ -72,7 +72,7 @@ import java.util.TreeSet;
 
 public class POIMapLayer extends OsmandMapLayer implements IContextMenuProvider,
 		MapTextProvider<Amenity>, IRouteInformationListener, OnFileVisibilityChangeListener {
-	private static final int START_ZOOM = 9;
+	private static final int START_ZOOM = 16;
 	private static final int START_ZOOM_ROUTE_TRACK = 11;
 	private static final int END_ZOOM_ROUTE_TRACK = 13;
 
@@ -406,9 +406,9 @@ public class POIMapLayer extends OsmandMapLayer implements IContextMenuProvider,
 						float y = tileBox.getPixYFromLatLon(latLon.getLatitude(), latLon.getLongitude());
 
 						if (tileBox.containsPoint(x, y, iconSize)) {
-							boolean intersects = intersects(boundIntersections, x, y, iconSize, iconSize);
-							boolean shouldShowNearbyPoi = app.getSettings().SHOW_NEARBY_POI.get()
-									&& routingHelper.isFollowingMode();
+							boolean intersects = false;	// intersects(boundIntersections, x, y, iconSize, iconSize);
+							boolean shouldShowNearbyPoi = false;// app.getSettings().SHOW_NEARBY_POI.get()
+									//&& routingHelper.isFollowingMode();
 							if (intersects || shouldShowNearbyPoi && !wph.isAmenityNoPassed(o)) {
 								pointImageDrawable.drawSmallPoint(canvas, x, y, textScale);
 								smallObjectsLatLon.add(latLon);
