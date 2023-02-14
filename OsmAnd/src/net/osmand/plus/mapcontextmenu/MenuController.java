@@ -618,7 +618,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 	}
 
 	private boolean shouldShowMapSize() {
-		return indexItem != null && !downloaded;
+		return false;//indexItem != null && !downloaded;
 	}
 
 	@NonNull
@@ -708,13 +708,13 @@ public abstract class MenuController extends BaseMenuController implements Colla
 				} else {
 					titleProgressController.caption = v;
 				}
-				titleProgressController.visible = true;
+				titleProgressController.visible = false;
 			} else if (downloadThread.shouldDownloadIndexes()) {
 				titleProgressController.setIndexesDownloadMode(mapActivity);
-				titleProgressController.visible = true;
+				titleProgressController.visible = false;
 			} else if (!internetConnectionAvailable) {
 				titleProgressController.setNoInternetConnectionMode(mapActivity);
-				titleProgressController.visible = true;
+				titleProgressController.visible = false;
 			} else {
 				titleProgressController.visible = false;
 			}

@@ -311,9 +311,9 @@ public class DownloadIndexesThread {
 	}
 
 	public boolean shouldDownloadIndexes() {
-		return app.getSettings().isInternetConnectionAvailable()
-				&& !indexes.isDownloadedFromInternet
-				&& !indexes.downloadFromInternetFailed;
+		return false;//app.getSettings().isInternetConnectionAvailable()
+				//&& !indexes.isDownloadedFromInternet
+				//&& !indexes.downloadFromInternetFailed;
 	}
 
 	/// PRIVATE IMPL
