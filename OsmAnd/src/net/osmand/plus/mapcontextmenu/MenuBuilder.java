@@ -85,6 +85,7 @@ import net.osmand.util.MapUtils;
 
 import org.apache.commons.logging.Log;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -290,6 +291,9 @@ public class MenuBuilder {
 		if (showTitleIfTruncated) {
 			buildTitleRow(view);
 		}
+		//if (object != null) {
+			buildPerLink(view);
+		//}
 		buildNearestWikiRow(view);
 		buildNearestPoiRow(view);
 		if (needBuildPlainMenuItems()) {
@@ -369,6 +373,38 @@ public class MenuBuilder {
 			}
 		}
 	}
+
+	protected void buildPerLink(ViewGroup view) {
+		Map<Integer, String> locationData = PointDescription.getLocationData(mapActivity, latLon.getLatitude(), latLon.getLongitude(), true);
+		String title = "Fiche PER pdf";
+		locationData.remove(PointDescription.LOCATION_LIST_HEADER);
+		//CollapsableView cv = getLocationCollapsableView(locationData);
+
+		LinearLayout llv = buildCollapsableContentView(mapActivity, true, true);
+			TextViewEx button = buildButtonInCollapsableView(mapActivity, false, false);
+			SpannableStringBuilder ssb = new SpannableStringBuilder();
+
+			ssb.append("Ouvrir");
+			button.setText(ssb);
+
+			//Faire le listener en dessous avec un intent...
+			button.setOnClickListener(v -> {
+				File file = new File("/storage/0000-0000/Ressources operationnelles/Documents ER/Brest/Bres_252F_CinemaLiberte.pdf");
+				if (file.exists()) {
+					Uri pdfPath = Uri.fromFile(file);
+					Intent intent = new Intent(Intent.ACTION_VIEW);
+					intent.setDataAndType(pdfPath, "application/pdf");
+					AndroidUtils.startActivityIfSafe(v.getContext(), intent);
+				}
+			});
+			llv.addView(button);
+		 	CollapsableView cv= new CollapsableView(llv, this, true);
+
+		buildRow(view, R.drawable.mm_works, null, title, 0, true, cv, false, 1,
+				false, null, false);
+
+	}
+
 
 	protected void buildNearestWikiRow(ViewGroup viewGroup) {
 		int position = viewGroup.getChildCount();
