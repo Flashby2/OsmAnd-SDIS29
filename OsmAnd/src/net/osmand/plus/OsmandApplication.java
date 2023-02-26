@@ -13,6 +13,7 @@ import static net.osmand.plus.settings.backend.ApplicationMode.valueOfStringKey;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.AssetManager;
@@ -263,6 +264,9 @@ public class OsmandApplication extends MultiDexApplication {
 
 		SearchUICore.setDebugMode(PluginsHelper.isDevelopment());
 		BackupHelper.DEBUG = true;//PluginsHelper.isDevelopment();
+
+		retrievePerPdf();						//Executé à chaque lancement
+
 	}
 
 	public boolean isPlusVersionInApp() {
@@ -1041,6 +1045,43 @@ public class OsmandApplication extends MultiDexApplication {
 			analyticsHelper.addEvent("map_download_" + event + ": " + item.getFileName() + " in " + time + " msec", AnalyticsHelper.EVENT_TYPE_MAP_DOWNLOAD);
 		} catch (Exception e) {
 			LOG.error(e);
+		}
+	}
+
+	private void getMyFiles(File dir) {
+		SharedPreferences perPref= getSharedPreferences("SDIS_per_pdf_path", Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = perPref.edit();
+
+		File[] files = dir.listFiles();
+
+		if (files!=null){
+			for (File file : files) {
+				if (file.isDirectory()) {
+					getMyFiles(file);
+				} else {
+					if(file.getName().indexOf("_",2) !=-1) {
+						String pdfName = file.getName().substring(0, file.getName().indexOf("_", file.getName().indexOf("_")+1));
+						pdfName = pdfName.replace("_", " ");
+						if(pdfName.charAt(pdfName.length() - 1) == ('F')){				//On retire le F de certain per
+							pdfName=pdfName.substring(0, pdfName.length() - 1);
+						}
+						editor.putString(pdfName.toUpperCase(), file.getAbsolutePath());
+						editor.apply();
+					}
+				}
+			}
+		}
+	}
+
+	public void retrievePerPdf(){						//Recuperation de tous les PDF de la carte SD situé dans le dossier Ressources operationnelles
+
+		File[] externalDirs = getExternalFilesDirs(null);
+		String sdCardPath = null;
+		if (externalDirs.length > 1) {
+			sdCardPath = externalDirs[1].getAbsolutePath();
+			String fileName = sdCardPath.substring(0,sdCardPath.lastIndexOf("/Android"));
+			File rootDir = new File(fileName + "/Ressources operationnelles/");
+			getMyFiles(rootDir);
 		}
 	}
 
