@@ -707,25 +707,11 @@ public class MapActivityActions extends MapActions {
 		int icArrowResId = listExpanded ? R.drawable.ic_action_arrow_drop_up : R.drawable.ic_action_arrow_drop_down;
 		int nextMode = listExpanded ? DRAWER_MODE_NORMAL : DRAWER_MODE_SWITCH_PROFILE;
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_SWITCH_PROFILE_ID)
-				.setLayout(R.layout.main_menu_drawer_btn_switch_profile)
-				.setIcon(currentMode.getIconRes())
-				.setSecondaryIcon(icArrowResId)
-				.setColor(currentMode.getProfileColor(nightMode))
-				.setTitle(currentMode.toHumanString())
-				.setDescription(modeDescription)
+				.setLayout(R.layout.main_menu_drawer_sdis_header)
 				.setListener((uiAdapter, view, item, isChecked) -> {
 					drawerMode = nextMode;
 					updateDrawerMenu();
 					return false;
-				}));
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_CONFIGURE_PROFILE_ID)
-				.setLayout(R.layout.main_menu_drawer_btn_configure_profile)
-				.setColor(currentMode.getProfileColor(nightMode))
-				.setTitle(getString(R.string.configure_profile))
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					mapActivity.dismissSettingsScreens();
-					BaseSettingsFragment.showInstance(mapActivity, SettingsScreenType.CONFIGURE_PROFILE);
-					return true;
 				}));
 	}
 

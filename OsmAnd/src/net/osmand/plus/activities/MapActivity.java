@@ -1871,9 +1871,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 				case WORK_POINT_SELECTION:
 					searchType = QuickSearchType.WORK_POINT;
 					break;
-				case CASERNE_POINT_SELECTION:
-					searchType = QuickSearchType.CASERNE_POINT;
-					break;
 			}
 			if (searchType != null) {
 				QuickSearchDialogFragment.showInstance(this, searchQuery, null,
