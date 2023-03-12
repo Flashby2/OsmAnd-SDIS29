@@ -38,6 +38,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import net.osmand.PlatformUtil;
@@ -47,6 +48,7 @@ import net.osmand.data.PointDescription;
 import net.osmand.data.QuadRect;
 import net.osmand.osm.PoiCategory;
 import net.osmand.osm.PoiType;
+import net.osmand.plus.BuildConfig;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
@@ -399,10 +401,16 @@ public class MenuBuilder {
 
 				button.setOnClickListener(v -> {
 					File file = new File(pdfURI);
-					Uri pdfPath = Uri.fromFile(file);
-					Intent intent = new Intent(Intent.ACTION_VIEW);
-					intent.setDataAndType(pdfPath, "application/pdf");
-					AndroidUtils.startActivityIfSafe(v.getContext(), intent);
+					//Uri pdfPath = Uri.fromFile(file);
+					Uri pdfPath = FileProvider.getUriForFile(getApplication().getApplicationContext(), BuildConfig.APPLICATION_ID + ".fileprovider",file);
+
+					Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+					pdfIntent.setDataAndType(pdfPath, "application/pdf");
+					pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					pdfIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+					pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+					AndroidUtils.startActivityIfSafe(v.getContext(), pdfIntent);
 				});
 			} else
 				ssb.append("Fiche PER non disponible");

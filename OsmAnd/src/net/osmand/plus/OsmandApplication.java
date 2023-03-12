@@ -583,12 +583,12 @@ public class OsmandApplication extends MultiDexApplication {
 	}
 
 	public void initVoiceCommandPlayer(@NonNull Context context,
-	                                   @NonNull ApplicationMode appMode,
-	                                   @Nullable Runnable onCommandPlayerCreated,
-	                                   boolean warnNoProvider,
-	                                   boolean showProgress,
-	                                   boolean forceInitialization,
-	                                   boolean applyAllModes) {
+									   @NonNull ApplicationMode appMode,
+									   @Nullable Runnable onCommandPlayerCreated,
+									   boolean warnNoProvider,
+									   boolean showProgress,
+									   boolean forceInitialization,
+									   boolean applyAllModes) {
 		String voiceProvider = osmandSettings.VOICE_PROVIDER.getModeValue(appMode);
 		if (OsmandSettings.VOICE_PROVIDER_NOT_USE.equals(voiceProvider)) {
 			osmandSettings.VOICE_MUTE.setModeValue(appMode, true);
