@@ -433,15 +433,19 @@ public class POIMapLayer extends OsmandMapLayer implements IContextMenuProvider,
 							PointImageDrawable pointImageDrawable;
 							String test = o.getAdditionalInfo("ref");
 							if(o.getSubType().equals("fire_hydrant")) {
-								if (test != null && test.endsWith("100 mm"))
+								if (test != null && test.endsWith("PI 100 mm"))
 									pointImageDrawable = PointImageDrawable.getOrCreate(
 											getContext(), 0,false, true, R.drawable.pi_100_mm,SQUARE);
-								else if (test != null && test.endsWith("150 mm"))
+								else if (test != null && test.endsWith("PI 150 mm"))
 									pointImageDrawable = PointImageDrawable.getOrCreate(
 											getContext(), 0,false, true, R.drawable.pi_150_mm,SQUARE);
-								else if (test != null && test.endsWith("80 mm"))
+								else if (test != null && test.endsWith("PI 80 mm"))
 									pointImageDrawable = PointImageDrawable.getOrCreate(
 											getContext(), 0,false, true, R.drawable.pi_80_mm,SQUARE);
+								else if (test != null && test.endsWith("BI 100 mm"))
+									pointImageDrawable = PointImageDrawable.getOrCreate(
+											getContext(), 0,false, true, R.drawable.bi,SQUARE);
+
 								else
 									pointImageDrawable = PointImageDrawable.getOrCreate(
 											getContext(), getColor(o), true, R.drawable.btn_circle_transparent);
