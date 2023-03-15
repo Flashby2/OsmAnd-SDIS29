@@ -90,18 +90,18 @@ public class PluginsHelper {
 		//allPlugins.add(new WikipediaPlugin(app));
 		allPlugins.add(new OsmandRasterMapsPlugin(app));
 		allPlugins.add(new OsmandMonitoringPlugin(app));
-		//checkMarketPlugin(app, new SRTMPlugin(app));
-		//allPlugins.add(new WeatherPlugin(app));
+		checkMarketPlugin(app, new SRTMPlugin(app));
+		allPlugins.add(new WeatherPlugin(app));
 		checkMarketPlugin(app, new NauticalMapsPlugin(app));
-		//checkMarketPlugin(app, new SkiMapsPlugin(app));
-		//allPlugins.add(new AudioVideoNotesPlugin(app));
-		//checkMarketPlugin(app, new ParkingPositionPlugin(app));
-		//allPlugins.add(new OsmEditingPlugin(app));
-		//allPlugins.add(new OpenPlaceReviewsPlugin(app));
+		checkMarketPlugin(app, new SkiMapsPlugin(app));
+		allPlugins.add(new AudioVideoNotesPlugin(app));
+		checkMarketPlugin(app, new ParkingPositionPlugin(app));
+		allPlugins.add(new OsmEditingPlugin(app));
+		allPlugins.add(new OpenPlaceReviewsPlugin(app));
 		allPlugins.add(new MapillaryPlugin(app));
-		//allPlugins.add(new AntPlusPlugin(app));
-		//allPlugins.add(new AccessibilityPlugin(app));
-		//allPlugins.add(new OsmandDevelopmentPlugin(app));
+		allPlugins.add(new AntPlusPlugin(app));
+		allPlugins.add(new AccessibilityPlugin(app));
+		allPlugins.add(new OsmandDevelopmentPlugin(app));
 
 		loadCustomPlugins(app);
 		registerAppInitializingDependedProperties(app);
