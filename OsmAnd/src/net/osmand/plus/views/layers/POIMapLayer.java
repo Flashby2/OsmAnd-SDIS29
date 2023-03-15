@@ -1,5 +1,6 @@
 package net.osmand.plus.views.layers;
 
+import static net.osmand.data.BackgroundType.SQUARE;
 import static net.osmand.osm.MapPoiTypes.ROUTE_ARTICLE;
 import static net.osmand.osm.MapPoiTypes.ROUTE_ARTICLE_POINT;
 import static net.osmand.osm.MapPoiTypes.ROUTE_TRACK;
@@ -432,9 +433,15 @@ public class POIMapLayer extends OsmandMapLayer implements IContextMenuProvider,
 							PointImageDrawable pointImageDrawable;
 							String test = o.getAdditionalInfo("ref");
 							if(o.getSubType().equals("fire_hydrant")) {
-								if (test != null && test.contains("I 100 mm"))
+								if (test != null && test.endsWith("100 mm"))
 									pointImageDrawable = PointImageDrawable.getOrCreate(
-											getContext(), ContextCompat.getColor(app, R.color.parking_icon_background), true, R.drawable.btn_circle_transparent);
+											getContext(), 0,false, true, R.drawable.pi_100_mm,SQUARE);
+								else if (test != null && test.endsWith("150 mm"))
+									pointImageDrawable = PointImageDrawable.getOrCreate(
+											getContext(), 0,false, true, R.drawable.pi_150_mm,SQUARE);
+								else if (test != null && test.endsWith("80 mm"))
+									pointImageDrawable = PointImageDrawable.getOrCreate(
+											getContext(), 0,false, true, R.drawable.pi_80_mm,SQUARE);
 								else
 									pointImageDrawable = PointImageDrawable.getOrCreate(
 											getContext(), getColor(o), true, R.drawable.btn_circle_transparent);
