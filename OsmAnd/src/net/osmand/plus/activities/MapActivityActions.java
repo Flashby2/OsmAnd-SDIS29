@@ -480,14 +480,6 @@ public class MapActivityActions extends MapActions {
 					return true;
 				}));
 
-		adapter.addItem(new ContextMenuItem(DRAWER_MEASURE_DISTANCE_ID)
-				.setTitleId(R.string.plan_route, mapActivity)
-				.setIcon(R.drawable.ic_action_plan_route)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					StartPlanRouteBottomSheet.showInstance(mapActivity.getSupportFragmentManager());
-					return true;
-				}));
-
 		app.getAidlApi().registerNavDrawerItems(mapActivity, adapter);
 
 		adapter.addItem(new ContextMenuItem(DRAWER_DIVIDER_ID)
@@ -631,6 +623,13 @@ public class MapActivityActions extends MapActions {
 					return true;
 				}));
 
+		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_MEASURE_DISTANCE_ID)
+				.setTitleId(R.string.shared_string_measure_distance, mapActivity)
+				.setIcon(R.drawable.ic_action_plan_route)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					StartPlanRouteBottomSheet.showInstance(mapActivity.getSupportFragmentManager());
+					return true;
+				}));
 
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_HELP_ID)
 				.setTitleId(R.string.shared_string_help, mapActivity)
