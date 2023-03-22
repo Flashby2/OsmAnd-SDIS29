@@ -426,6 +426,15 @@ public class MapActivityActions extends MapActions {
 
 		//Hidding setting option in the SwitchProfile menu
 
+		adapter.addItem(new ContextMenuItem(DRAWER_MAP_MARKERS_ID)
+				.setTitleId(R.string.map_markers, mapActivity)
+				.setIcon(R.drawable.ic_action_flag)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_markers_open");
+					MapActivity.clearPrevActivityIntent();
+					MapMarkersDialogFragment.showInstance(mapActivity);
+					return true;
+				}));
 
 		adapter.addItem(new ContextMenuItem(DRAWER_BACKUP_RESTORE_ID)
 				.setTitleId(R.string.backup_and_restore, mapActivity)
@@ -520,15 +529,6 @@ public class MapActivityActions extends MapActions {
 
 		createProfilesController(app, optionsMenuHelper, nightMode, false);
 
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_MAP_MARKERS_ID)
-				.setTitleId(R.string.map_markers, mapActivity)
-				.setIcon(R.drawable.ic_action_flag)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					app.logEvent("drawer_markers_open");
-					MapActivity.clearPrevActivityIntent();
-					MapMarkersDialogFragment.showInstance(mapActivity);
-					return true;
-				}));
 
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_MY_PLACES_ID)
 				.setTitleId(R.string.shared_string_my_places, mapActivity)
