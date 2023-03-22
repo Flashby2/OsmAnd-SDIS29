@@ -384,7 +384,9 @@ public class MenuBuilder {
 		SharedPreferences perPref = app.getSharedPreferences("SDIS_per_pdf_path", Context.MODE_PRIVATE);
 		if(amenity.getName().contains(" ")) {
 			String pdfName = amenity.getName().substring(0, amenity.getName().indexOf(" ", amenity.getName().indexOf(" ")+1)).toUpperCase();			// Ne pas oublier le Uppercase
+			String pdfNameF = amenity.getName().substring(0, amenity.getName().indexOf(" ", amenity.getName().indexOf(" ")+1)).toUpperCase() + "F";			// Ne pas oublier le Uppercase
 			String pdfURI = perPref.getString(pdfName, null);
+			String pdfURIF = perPref.getString(pdfNameF, null);
 
 
 			String perName = amenity.getName();
@@ -396,28 +398,51 @@ public class MenuBuilder {
 			TextViewEx button = buildButtonInCollapsableView(mapActivity, false, false);
 			SpannableStringBuilder ssb = new SpannableStringBuilder();
 
-			if(pdfURI != null) {
-				ssb.append(pdfURI.substring(pdfURI.lastIndexOf("/") + 1, pdfURI.length()));
+			if(pdfURI == null && pdfURIF == null)
+				ssb.append("Fiche PER non disponible");
+			else {
+				if(pdfURI != null) {
+					ssb.append(pdfURI.substring(pdfURI.lastIndexOf("/") + 1, pdfURI.length()));
 
-				button.setOnClickListener(v -> {
-					File file = new File(pdfURI);
-					//Uri pdfPath = Uri.fromFile(file);
-					Uri pdfPath = FileProvider.getUriForFile(getApplication().getApplicationContext(), BuildConfig.APPLICATION_ID + ".fileprovider",file);
+					button.setOnClickListener(v -> {
+						File file = new File(pdfURI);
+						//Uri pdfPath = Uri.fromFile(file);
+						Uri pdfPath = FileProvider.getUriForFile(getApplication().getApplicationContext(), BuildConfig.APPLICATION_ID + ".fileprovider", file);
+
+						Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+						pdfIntent.setDataAndType(pdfPath, "application/pdf");
+						pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						pdfIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+						pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+						AndroidUtils.startActivityIfSafe(v.getContext(), pdfIntent);
+					});
+				}
+			}
+			button.setText(ssb);
+			llv.addView(button);
+
+			if (pdfURIF != null) {
+				TextViewEx buttonF = buildButtonInCollapsableView(mapActivity, false, false);
+				SpannableStringBuilder ssbF = new SpannableStringBuilder();
+				ssbF.append(pdfURIF.substring(pdfURIF.lastIndexOf("/") + 1, pdfURIF.length()));
+
+				buttonF.setOnClickListener(v -> {
+					File file = new File(pdfURIF);
+					Uri pdfPathF = FileProvider.getUriForFile(getApplication().getApplicationContext(), BuildConfig.APPLICATION_ID + ".fileprovider", file);
 
 					Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-					pdfIntent.setDataAndType(pdfPath, "application/pdf");
+					pdfIntent.setDataAndType(pdfPathF, "application/pdf");
 					pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					pdfIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 					pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
 					AndroidUtils.startActivityIfSafe(v.getContext(), pdfIntent);
 				});
-			} else
-				ssb.append("Fiche PER non disponible");
+				buttonF.setText(ssbF);
+				llv.addView(buttonF);
 
-			button.setText(ssb);
-			llv.addView(button);
-
+			}
 			CollapsableView cv= new CollapsableView(llv, this, true);
 			buildRow(view, R.drawable.mm_works, null, title, 0, true, cv, false, 1,
 					false, null, false);

@@ -1066,12 +1066,12 @@ public class OsmandApplication extends MultiDexApplication {
 				} else {
 					try {
 						if(file.getName().indexOf("_",2) !=-1) {
-							System.out.println(file.getName());
+							System.out.println("file izi : " + file.getName());
 							String pdfName = file.getName().substring(0, file.getName().indexOf("_", file.getName().indexOf("_")+1));
 							pdfName = pdfName.replace("_", " ");
-							if(pdfName.charAt(pdfName.length() - 1) == ('F')){				//On retire le F de certain per
-								pdfName=pdfName.substring(0, pdfName.length() - 1);
-							}
+							//if(pdfName.charAt(pdfName.length() - 1) == ('F')){				//On retire le F de certain per
+							//	pdfName=pdfName.substring(0, pdfName.length() - 1);
+							//}
 							editor.putString(pdfName.toUpperCase(), file.getAbsolutePath());	//On renseigne le code du batiment avec le chemin d'acces de son pdf
 							editor.apply();
 						}
