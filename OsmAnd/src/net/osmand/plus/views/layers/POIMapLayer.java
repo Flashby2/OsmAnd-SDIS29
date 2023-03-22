@@ -449,7 +449,13 @@ public class POIMapLayer extends OsmandMapLayer implements IContextMenuProvider,
 								else
 									pointImageDrawable = PointImageDrawable.getOrCreate(
 											getContext(), getColor(o), true, R.drawable.btn_circle_transparent);
-							}
+							} else if(o.getSubType().equals("works"))
+								pointImageDrawable = PointImageDrawable.getOrCreate(
+										getContext(), 0,false, true, R.drawable.per,SQUARE);
+							else if(o.getSubType().equals("fire_water_pond"))
+								pointImageDrawable = PointImageDrawable.getOrCreate(
+										getContext(), 0,false, true, R.drawable.pena,SQUARE);
+
 							else
 								pointImageDrawable = PointImageDrawable.getOrCreate(
 									getContext(), getColor(o), true, RenderingIcons.getResId(id));
