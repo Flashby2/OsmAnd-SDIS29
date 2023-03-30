@@ -120,6 +120,7 @@ import org.apache.commons.logging.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class MapActivityActions extends MapActions {
@@ -605,7 +606,7 @@ public class MapActivityActions extends MapActions {
 					app.logEvent("drawer_firestation_open");
 					MapControlsLayer mapControlsLayer = mapActivity.getMapLayers().getMapControlsLayer();
 					if (mapControlsLayer != null) {
-						mapControlsLayer.doRoute();
+						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"caserne",new LatLon(Objects.requireNonNull(app.getLocationProvider().getLastStaleKnownLocation()).getLatitude(),app.getLocationProvider().getLastStaleKnownLocation().getLongitude()));
 					}
 					return true;
 				}));
@@ -616,9 +617,9 @@ public class MapActivityActions extends MapActions {
 				.setIcon(R.drawable.mm_healthcare)
 				.setListener((uiAdapter, view, item, isChecked) -> {
 					app.logEvent("drawer_hospital_open");
-					POIMapLayer mapControlsLayer = mapActivity.getMapLayers().getPoiMapLayer();
+					MapControlsLayer mapControlsLayer = mapActivity.getMapLayers().getMapControlsLayer();
 					if (mapControlsLayer != null) {
-						//mapControlsLayer.collectObjectsFromPoint();
+						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"hopital",new LatLon(Objects.requireNonNull(app.getLocationProvider().getLastStaleKnownLocation()).getLatitude(),app.getLocationProvider().getLastStaleKnownLocation().getLongitude()));
 					}
 					return true;
 				}));
