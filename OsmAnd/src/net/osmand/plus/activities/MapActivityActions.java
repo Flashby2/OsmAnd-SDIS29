@@ -606,7 +606,7 @@ public class MapActivityActions extends MapActions {
 					app.logEvent("drawer_firestation_open");
 					MapControlsLayer mapControlsLayer = mapActivity.getMapLayers().getMapControlsLayer();
 					if (mapControlsLayer != null) {
-						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"caserne",new LatLon(Objects.requireNonNull(app.getLocationProvider().getLastStaleKnownLocation()).getLatitude(),app.getLocationProvider().getLastStaleKnownLocation().getLongitude()));
+						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"Caserne de pompiers",new LatLon(Objects.requireNonNull(app.getLocationProvider().getLastStaleKnownLocation()).getLatitude(),app.getLocationProvider().getLastStaleKnownLocation().getLongitude()));
 					}
 					return true;
 				}));
