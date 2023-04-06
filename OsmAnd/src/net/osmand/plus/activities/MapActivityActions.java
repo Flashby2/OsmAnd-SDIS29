@@ -787,7 +787,7 @@ public class MapActivityActions extends MapActions {
 		ContextMenuListAdapter simpleListAdapter = cma.toListAdapter(mapActivity, viewCreator);
 
 		menuItemsListView.setAdapter(simpleListAdapter);
-		menuItemsListView.setOnItemClickListener((parent, view, position, id) -> {
+		menuItemsListView.setOnItemLongClickListener((parent, view, position, id) -> {
 			mapActivity.dismissCardDialog();
 			boolean hasHeader = menuItemsListView.getHeaderViewsCount() > 0;
 			boolean hasFooter = menuItemsListView.getFooterViewsCount() > 0;
@@ -804,6 +804,7 @@ public class MapActivityActions extends MapActions {
 					mapActivity.closeDrawer();
 				}
 			}
+			return hasHeader;
 		});
 	}
 }
