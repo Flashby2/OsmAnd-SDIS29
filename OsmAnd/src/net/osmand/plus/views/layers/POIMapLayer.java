@@ -445,6 +445,9 @@ public class POIMapLayer extends OsmandMapLayer implements IContextMenuProvider,
 								else if (category != null && category.endsWith("BI 100 mm"))
 									pointImageDrawable = PointImageDrawable.getOrCreate(
 											getContext(), 0,false, true, R.drawable.bi,SQUARE);
+								else if (category != null && category.contains("eau de mer"))
+									pointImageDrawable = PointImageDrawable.getOrCreate(
+											getContext(), 0,false, true, R.drawable.bouche_eau_de_mer,SQUARE);
 
 								else
 									pointImageDrawable = PointImageDrawable.getOrCreate(
