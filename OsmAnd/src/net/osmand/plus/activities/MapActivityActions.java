@@ -787,24 +787,47 @@ public class MapActivityActions extends MapActions {
 		ContextMenuListAdapter simpleListAdapter = cma.toListAdapter(mapActivity, viewCreator);
 
 		menuItemsListView.setAdapter(simpleListAdapter);
-		menuItemsListView.setOnItemLongClickListener((parent, view, position, id) -> {
-			mapActivity.dismissCardDialog();
-			boolean hasHeader = menuItemsListView.getHeaderViewsCount() > 0;
-			boolean hasFooter = menuItemsListView.getFooterViewsCount() > 0;
-			if (hasHeader && position == 0 || (hasFooter && position == menuItemsListView.getCount() - 1)) {
-				String drawerLogoParams = app.getAppCustomization().getNavDrawerLogoUrl();
-				if (!Algorithms.isEmpty(drawerLogoParams)) {
-					AndroidUtils.openUrl(mapActivity, Uri.parse(drawerLogoParams), nightMode);
-				}
-			} else {
-				position -= menuItemsListView.getHeaderViewsCount();
-				ContextMenuItem item = cma.getItem(position);
-				ItemClickListener click = item.getItemClickListener();
-				if (click != null && click.onContextMenuClick(simpleListAdapter, view, item, false)) {
-					mapActivity.closeDrawer();
+		menuItemsListView.setOnItemClickListener((parent, view, position, id) -> {
+			if(position != 0) {
+				mapActivity.dismissCardDialog();
+				boolean hasHeader = menuItemsListView.getHeaderViewsCount() > 0;
+				boolean hasFooter = menuItemsListView.getFooterViewsCount() > 0;
+				if (hasHeader && position == 0 || (hasFooter && position == menuItemsListView.getCount() - 1)) {
+					String drawerLogoParams = app.getAppCustomization().getNavDrawerLogoUrl();
+					if (!Algorithms.isEmpty(drawerLogoParams)) {
+						AndroidUtils.openUrl(mapActivity, Uri.parse(drawerLogoParams), nightMode);
+					}
+				} else {
+					position -= menuItemsListView.getHeaderViewsCount();
+					ContextMenuItem item = cma.getItem(position);
+					ItemClickListener click = item.getItemClickListener();
+					if (click != null && click.onContextMenuClick(simpleListAdapter, view, item, false)) {
+						mapActivity.closeDrawer();
+					}
 				}
 			}
-			return hasHeader;
+		});
+
+		menuItemsListView.setOnItemLongClickListener((parent, view, position, id) -> {
+			if(position == 0) {
+				mapActivity.dismissCardDialog();
+				boolean hasHeader = menuItemsListView.getHeaderViewsCount() > 0;
+				boolean hasFooter = menuItemsListView.getFooterViewsCount() > 0;
+				if (hasHeader && position == 0 || (hasFooter && position == menuItemsListView.getCount() - 1)) {
+					String drawerLogoParams = app.getAppCustomization().getNavDrawerLogoUrl();
+					if (!Algorithms.isEmpty(drawerLogoParams)) {
+						AndroidUtils.openUrl(mapActivity, Uri.parse(drawerLogoParams), nightMode);
+					}
+				} else {
+					position -= menuItemsListView.getHeaderViewsCount();
+					ContextMenuItem item = cma.getItem(position);
+					ItemClickListener click = item.getItemClickListener();
+					if (click != null && click.onContextMenuClick(simpleListAdapter, view, item, false)) {
+						mapActivity.closeDrawer();
+					}
+				}
+			}
+			return true;
 		});
 	}
 }
