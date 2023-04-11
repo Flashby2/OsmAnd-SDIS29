@@ -606,7 +606,7 @@ public class MapActivityActions extends MapActions {
 					app.logEvent("drawer_firestation_open");
 					MapControlsLayer mapControlsLayer = mapActivity.getMapLayers().getMapControlsLayer();
 					if (mapControlsLayer != null) {
-						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"Caserne de pompiers",new LatLon(Objects.requireNonNull(app.getLocationProvider().getLastStaleKnownLocation()).getLatitude(),app.getLocationProvider().getLastStaleKnownLocation().getLongitude()));
+						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"Caserne de pompiers", null);
 					}
 					return true;
 				}));
@@ -619,7 +619,7 @@ public class MapActivityActions extends MapActions {
 					app.logEvent("drawer_hospital_open");
 					MapControlsLayer mapControlsLayer = mapActivity.getMapLayers().getMapControlsLayer();
 					if (mapControlsLayer != null) {
-						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"hopital",new LatLon(Objects.requireNonNull(app.getLocationProvider().getLastStaleKnownLocation()).getLatitude(),app.getLocationProvider().getLastStaleKnownLocation().getLongitude()));
+						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"hopital",null);
 					}
 					return true;
 				}));
