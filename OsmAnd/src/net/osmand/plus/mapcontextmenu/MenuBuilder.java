@@ -9,6 +9,7 @@ import static net.osmand.plus.mapcontextmenu.builders.cards.ImageCard.GetImageCa
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -16,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -36,6 +38,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import net.osmand.PlatformUtil;
@@ -45,6 +48,7 @@ import net.osmand.data.PointDescription;
 import net.osmand.data.QuadRect;
 import net.osmand.osm.PoiCategory;
 import net.osmand.osm.PoiType;
+import net.osmand.plus.BuildConfig;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
@@ -85,6 +89,7 @@ import net.osmand.util.MapUtils;
 
 import org.apache.commons.logging.Log;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -105,6 +110,7 @@ public class MenuBuilder {
 	protected static final String NEAREST_WIKI_KEY = "nearest_wiki_key";
 	protected static final String NEAREST_POI_KEY = "nearest_poi_key";
 	protected static final String DIVIDER_ROW_KEY = "divider_row_key";
+	protected static final String NAMES_ROW_KEY = "names_row_key";
 
 	private static final int NEARBY_MAX_POI_COUNT = 10;
 	private static final int NEARBY_POI_MIN_RADIUS = 250;
@@ -282,12 +288,16 @@ public class MenuBuilder {
 		this.light = light;
 	}
 
+
 	public void build(@NonNull ViewGroup view, @Nullable Object object) {
 		firstRow = true;
 		hidden = false;
 		buildTopInternal(view);
 		if (showTitleIfTruncated) {
 			buildTitleRow(view);
+		}
+		if (amenity!= null && amenity.getSubType().equals("works")) {
+			buildPerLink(view);
 		}
 		buildNearestWikiRow(view);
 		buildNearestPoiRow(view);
@@ -368,6 +378,79 @@ public class MenuBuilder {
 			}
 		}
 	}
+
+	protected void buildPerLink(ViewGroup view) {
+
+		SharedPreferences perPref = app.getSharedPreferences("SDIS_per_pdf_path", Context.MODE_PRIVATE);
+		if(amenity.getName().contains(" ")) {
+			String pdfName = amenity.getName().substring(0, amenity.getName().indexOf(" ", amenity.getName().indexOf(" ")+1)).toUpperCase();			// Ne pas oublier le Uppercase
+			String pdfNameF = amenity.getName().substring(0, amenity.getName().indexOf(" ", amenity.getName().indexOf(" ")+1)).toUpperCase() + "F";			// Ne pas oublier le Uppercase
+			String pdfURI = perPref.getString(pdfName, null);
+			String pdfURIF = perPref.getString(pdfNameF, null);
+
+
+			String perName = amenity.getName();
+			Map<Integer, String> locationData = PointDescription.getLocationData(mapActivity, latLon.getLatitude(), latLon.getLongitude(), true);
+			String title = "Fiche PER pdf";
+			locationData.remove(PointDescription.LOCATION_LIST_HEADER);
+
+			LinearLayout llv = buildCollapsableContentView(mapActivity, true, true);
+			TextViewEx button = buildButtonInCollapsableView(mapActivity, false, false);
+			SpannableStringBuilder ssb = new SpannableStringBuilder();
+
+			if(pdfURI == null && pdfURIF == null)
+				ssb.append("Fiche PER non disponible");
+			else {
+				if(pdfURI != null) {
+					ssb.append(pdfURI.substring(pdfURI.lastIndexOf("/") + 1, pdfURI.length()));
+
+					button.setOnClickListener(v -> {
+						File file = new File(pdfURI);
+						//Uri pdfPath = Uri.fromFile(file);
+						Uri pdfPath = FileProvider.getUriForFile(getApplication().getApplicationContext(), BuildConfig.APPLICATION_ID + ".fileprovider", file);
+
+						Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+						pdfIntent.setDataAndType(pdfPath, "application/pdf");
+						pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						pdfIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+						pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+						AndroidUtils.startActivityIfSafe(v.getContext(), pdfIntent);
+					});
+				}
+			}
+			button.setText(ssb);
+			llv.addView(button);
+
+			if (pdfURIF != null) {
+				TextViewEx buttonF = buildButtonInCollapsableView(mapActivity, false, false);
+				SpannableStringBuilder ssbF = new SpannableStringBuilder();
+				ssbF.append(pdfURIF.substring(pdfURIF.lastIndexOf("/") + 1, pdfURIF.length()));
+
+				buttonF.setOnClickListener(v -> {
+					File file = new File(pdfURIF);
+					Uri pdfPathF = FileProvider.getUriForFile(getApplication().getApplicationContext(), BuildConfig.APPLICATION_ID + ".fileprovider", file);
+
+					Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+					pdfIntent.setDataAndType(pdfPathF, "application/pdf");
+					pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					pdfIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+					pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+					AndroidUtils.startActivityIfSafe(v.getContext(), pdfIntent);
+				});
+				buttonF.setText(ssbF);
+				llv.addView(buttonF);
+
+			}
+			CollapsableView cv= new CollapsableView(llv, this, true);
+			buildRow(view, R.drawable.mm_works, null, title, 0, true, cv, false, 1,
+					false, null, false);
+
+		}
+
+	}
+
 
 	protected void buildNearestWikiRow(ViewGroup viewGroup) {
 		int position = viewGroup.getChildCount();

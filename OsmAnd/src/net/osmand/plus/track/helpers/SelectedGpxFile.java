@@ -1,18 +1,17 @@
 package net.osmand.plus.track.helpers;
 
+import static net.osmand.gpx.GPXUtilities.calculateTrackBounds;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import static net.osmand.GPXUtilities.calculateTrackBounds;
-
-import net.osmand.core.android.MapRendererView;
 import net.osmand.core.jni.PointI;
 import net.osmand.core.jni.QVectorPointI;
 import net.osmand.data.QuadRect;
-import net.osmand.GPXUtilities.GPXFile;
-import net.osmand.GPXUtilities.GPXTrackAnalysis;
-import net.osmand.GPXUtilities.TrkSegment;
-import net.osmand.GPXUtilities.WptPt;
+import net.osmand.gpx.GPXFile;
+import net.osmand.gpx.GPXTrackAnalysis;
+import net.osmand.gpx.GPXUtilities.TrkSegment;
+import net.osmand.gpx.GPXUtilities.WptPt;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.track.helpers.GPXDatabase.GpxDataItem;
 import net.osmand.util.Algorithms;
@@ -153,7 +152,7 @@ public class SelectedGpxFile {
 					bBox = calculateTrackBounds(gpxFile.getGeneralTrack().segments);
 					bBoxFromGeneralTrack = true;
 					return bBox;
-				} else {					
+				} else {
 					return new QuadRect();
 				}
 			} else {
@@ -184,7 +183,7 @@ public class SelectedGpxFile {
 					path31 = trackPointsToPath31(gpxFile.getGeneralTrack().segments);
 					path31FromGeneralTrack = true;
 					return path31;
-				} else {					
+				} else {
 					return new QVectorPointI();
 				}
 			} else {

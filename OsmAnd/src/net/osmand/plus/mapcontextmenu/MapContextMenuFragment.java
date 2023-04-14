@@ -1188,10 +1188,10 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 			}
 
 			// Download buttons
-			boolean showDownloadButtonsContainer =
-					((leftDownloadButtonController != null && leftDownloadButtonController.visible)
-							|| (rightDownloadButtonController != null && rightDownloadButtonController.visible))
-							&& (titleProgressController == null || !titleProgressController.visible);
+			boolean showDownloadButtonsContainer = false;
+					//((leftDownloadButtonController != null && leftDownloadButtonController.visible)
+					//		|| (rightDownloadButtonController != null && rightDownloadButtonController.visible))
+					//		&& (titleProgressController == null || !titleProgressController.visible);
 			View downloadButtonsContainer = view.findViewById(R.id.download_buttons_container);
 			downloadButtonsContainer.setVisibility(showDownloadButtonsContainer ? View.VISIBLE : View.GONE);
 

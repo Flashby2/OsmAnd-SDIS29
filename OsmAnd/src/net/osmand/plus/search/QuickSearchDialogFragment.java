@@ -1325,6 +1325,7 @@ public class QuickSearchDialogFragment extends DialogFragment implements OsmAndC
 		if (SearchUICore.isDebugMode()) {
 			LOG.info("UI >> Start loading nearest cities");
 		}
+		updateCitiesItems();
 		startNearestCitySearch();
 		runCoreSearch("", false, false, new SearchResultListener() {
 			@Override

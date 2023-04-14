@@ -9,7 +9,9 @@
 	<uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
 
 	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
 	<uses-permission android:name="android.permission.STORAGE" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -40,17 +42,12 @@
 	<uses-feature android:name="android.hardware.bluetooth" android:required="false" />
 	<uses-feature android:name="com.sec.feature.spen_usp" android:required="false"/>
 
-	<!--
-	<uses-sdk android:targetSdkVersion="26"
-		tools:overrideLibrary="com.getkeepsafe.taptargetview, studio.carbonylgroup.textfieldboxes, android.support.customtabs"/>
-	-->
 	<supports-screens android:resizeable="true" android:smallScreens="true" android:normalScreens="true" android:largeScreens="true"
 		android:xlargeScreens="true" android:anyDensity="true" />
 
 	<queries>
 		<package android:name="net.osmand.srtmPlugin" />
 		<package android:name="net.osmand.srtmPlugin.paid" />
-		<package android:name="net.osmand.parkingPlugin" />
 		<package android:name="net.osmand.skimapsPlugin" />
 		<package android:name="net.osmand.nauticalPlugin" />
 
@@ -91,7 +88,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="net.osmand.plus.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true" >
             <meta-data

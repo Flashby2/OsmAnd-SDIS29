@@ -87,7 +87,7 @@ public class PluginsHelper {
 		Set<String> enabledPlugins = app.getSettings().getEnabledPlugins();
 		allPlugins.clear();
 
-		allPlugins.add(new WikipediaPlugin(app));
+		//allPlugins.add(new WikipediaPlugin(app));
 		allPlugins.add(new OsmandRasterMapsPlugin(app));
 		allPlugins.add(new OsmandMonitoringPlugin(app));
 		checkMarketPlugin(app, new SRTMPlugin(app));

@@ -1,7 +1,7 @@
 package net.osmand.plus.mapmarkers;
 
-import static net.osmand.GPXUtilities.readText;
-import static net.osmand.GPXUtilities.writeNotNullText;
+import static net.osmand.gpx.GPXUtilities.readText;
+import static net.osmand.gpx.GPXUtilities.writeNotNullText;
 import static net.osmand.util.MapUtils.createShortLinkString;
 
 import android.util.Pair;
@@ -10,11 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
-import net.osmand.GPXUtilities;
-import net.osmand.GPXUtilities.GPXExtensionsReader;
-import net.osmand.GPXUtilities.GPXExtensionsWriter;
-import net.osmand.GPXUtilities.GPXFile;
-import net.osmand.GPXUtilities.WptPt;
+import net.osmand.gpx.GPXUtilities;
+import net.osmand.gpx.GPXUtilities.GPXExtensionsReader;
+import net.osmand.gpx.GPXUtilities.GPXExtensionsWriter;
+import net.osmand.gpx.GPXFile;
+import net.osmand.gpx.GPXUtilities.WptPt;
 import net.osmand.IndexConstants;
 import net.osmand.PlatformUtil;
 import net.osmand.data.FavouritePoint;
@@ -214,7 +214,7 @@ public class ItineraryDataHelper {
 	}
 
 	private GPXFile loadGPXFile(File file, List<ItineraryGroupInfo> groupInfos) {
-		return GPXUtilities.loadGPXFile(file, getGPXExtensionsReader(groupInfos));
+		return GPXUtilities.loadGPXFile(file, getGPXExtensionsReader(groupInfos), false);
 	}
 
 	public GPXExtensionsReader getGPXExtensionsReader(List<ItineraryGroupInfo> groupInfos) {

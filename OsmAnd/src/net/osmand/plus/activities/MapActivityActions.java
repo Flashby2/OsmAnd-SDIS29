@@ -55,9 +55,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
-import net.osmand.GPXUtilities;
-import net.osmand.GPXUtilities.GPXFile;
-import net.osmand.GPXUtilities.WptPt;
+import net.osmand.gpx.GPXUtilities;
+import net.osmand.gpx.GPXFile;
+import net.osmand.gpx.GPXUtilities.WptPt;
 import net.osmand.PlatformUtil;
 import net.osmand.data.FavouritePoint;
 import net.osmand.data.LatLon;
@@ -103,6 +103,7 @@ import net.osmand.plus.utils.AndroidUtils;
 import net.osmand.plus.utils.ColorUtilities;
 import net.osmand.plus.views.MapActions;
 import net.osmand.plus.views.layers.MapControlsLayer;
+import net.osmand.plus.views.layers.POIMapLayer;
 import net.osmand.plus.views.mapwidgets.configure.ConfigureScreenFragment;
 import net.osmand.plus.widgets.ctxmenu.ContextMenuAdapter;
 import net.osmand.plus.widgets.ctxmenu.ContextMenuListAdapter;
@@ -119,6 +120,7 @@ import org.apache.commons.logging.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class MapActivityActions extends MapActions {
@@ -384,11 +386,11 @@ public class MapActivityActions extends MapActions {
 		super.enterRoutePlanningModeGivenGpx(gpxFile, appMode, from, fromName, useIntermediatePointsByDefault,
 				showMenu, menuState);
 		if (showMenu) {
-			app.getOsmandMap().getMapLayers().getMapControlsLayer().showRouteInfoMenu(menuState);
+			mapActivity.getMapRouteInfoMenu().setShowMenu(menuState);
 		}
-		if (!settings.SPEED_CAMERAS_ALERT_SHOWED.get()) {
+		/*if (!settings.SPEED_CAMERAS_ALERT_SHOWED.get()) {		Désactivation de la popup radar
 			SpeedCamerasBottomSheet.showInstance(mapActivity.getSupportFragmentManager(), null);
-		}
+		}*/
 	}
 
 	@Override
@@ -423,64 +425,9 @@ public class MapActivityActions extends MapActions {
 		drawerMode = DRAWER_MODE_NORMAL;
 		createProfilesController(app, adapter, nightMode, true);
 
-		List<ApplicationMode> activeModes = ApplicationMode.values(app);
-		ApplicationMode currentMode = app.getSettings().APPLICATION_MODE.get();
+		//Hidding setting option in the SwitchProfile menu
 
-		String modeDescription;
-
-		RoutingProfilesHolder profiles = routingDataUtils.getRoutingProfiles();
-		for (ApplicationMode appMode : activeModes) {
-			if (appMode.isCustomProfile()) {
-				modeDescription = getProfileDescription(app, appMode, profiles, getString(R.string.profile_type_user_string));
-			} else {
-				modeDescription = getProfileDescription(app, appMode, profiles, getString(R.string.profile_type_osmand_string));
-			}
-
-			int tag = currentMode.equals(appMode) ? PROFILES_CHOSEN_PROFILE_TAG : PROFILES_NORMAL_PROFILE_TAG;
-
-			adapter.addItem(new ContextMenuItem(null)
-					.setLayout(R.layout.profile_list_item)
-					.setIcon(appMode.getIconRes())
-					.setColor(appMode.getProfileColor(nightMode))
-					.setTag(tag)
-					.setTitle(appMode.toHumanString())
-					.setDescription(modeDescription)
-					.setListener((uiAdapter, view, item, isChecked) -> {
-						app.getSettings().setApplicationMode(appMode);
-						updateDrawerMenu();
-						return false;
-					}));
-		}
-
-		adapter.addItem(new ContextMenuItem(null)
-				.setLayout(R.layout.profile_list_item)
-				.setColor(ColorUtilities.getActiveColor(app, nightMode))
-				.setTag(PROFILES_CONTROL_BUTTON_TAG)
-				.setTitle(getString(R.string.shared_string_manage))
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					BaseSettingsFragment.showInstance(mapActivity, SettingsScreenType.MAIN_SETTINGS);
-					return true;
-				}));
-
-		return adapter;
-	}
-
-	private ContextMenuAdapter createNormalOptionsMenu(OsmandApplication app, ContextMenuAdapter optionsMenuHelper, boolean nightMode) {
-
-		createProfilesController(app, optionsMenuHelper, nightMode, false);
-
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_DASHBOARD_ID)
-				.setTitleId(R.string.home, mapActivity)
-				.setIcon(R.drawable.ic_dashboard)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					app.logEvent("drawer_dashboard_open");
-					MapActivity.clearPrevActivityIntent();
-					mapActivity.closeDrawer();
-					mapActivity.getDashboard().setDashboardVisibility(true, DashboardType.DASHBOARD, AndroidUtils.getCenterViewCoordinates(view));
-					return true;
-				}));
-
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_MAP_MARKERS_ID)
+		adapter.addItem(new ContextMenuItem(DRAWER_MAP_MARKERS_ID)
 				.setTitleId(R.string.map_markers, mapActivity)
 				.setIcon(R.drawable.ic_action_flag)
 				.setListener((uiAdapter, view, item, isChecked) -> {
@@ -489,6 +436,100 @@ public class MapActivityActions extends MapActions {
 					MapMarkersDialogFragment.showInstance(mapActivity);
 					return true;
 				}));
+
+		adapter.addItem(new ContextMenuItem(DRAWER_BACKUP_RESTORE_ID)
+				.setTitleId(R.string.backup_and_restore, mapActivity)
+				.setIcon(R.drawable.ic_action_cloud_upload)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_backup_restore_open");
+					if (app.getBackupHelper().isRegistered()) {
+						BackupCloudFragment.showInstance(mapActivity.getSupportFragmentManager());
+					} else {
+						BackupAuthorizationFragment.showInstance(mapActivity.getSupportFragmentManager());
+					}
+					return true;
+				}));
+
+
+		adapter.addItem(new ContextMenuItem(DRAWER_CONFIGURE_MAP_ID)
+				.setTitleId(R.string.configure_map, mapActivity)
+				.setIcon(R.drawable.ic_action_layers)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_config_map_open");
+					MapActivity.clearPrevActivityIntent();
+					mapActivity.getDashboard().setDashboardVisibility(true, DashboardType.CONFIGURE_MAP, AndroidUtils.getCenterViewCoordinates(view));
+					return false;
+				}));
+
+		String d = getString(R.string.welmode_download_maps);
+		if (app.getDownloadThread().getIndexes().isDownloadedFromInternet) {
+			List<IndexItem> updt = app.getDownloadThread().getIndexes().getItemsToUpdate();
+			if (updt != null && updt.size() > 0) {
+				d += " (" + updt.size() + ")";
+			}
+		}
+		adapter.addItem(new ContextMenuItem(DRAWER_DOWNLOAD_MAPS_ID)
+				.setTitleId(R.string.welmode_download_maps, null)
+				.setTitle(d).setIcon(R.drawable.ic_type_archive)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_download_maps_open");
+					Intent newIntent = new Intent(mapActivity, app.getAppCustomization().getDownloadActivity());
+					newIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+					mapActivity.startActivity(newIntent);
+					return true;
+				}));
+
+
+
+
+		adapter.addItem(new ContextMenuItem(DRAWER_LIVE_UPDATES_ID)
+				.setTitleId(R.string.live_updates, mapActivity)
+				.setIcon(R.drawable.ic_action_map_update)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					LiveUpdatesFragment.showInstance(mapActivity.getSupportFragmentManager(), null);
+					return true;
+				}));
+
+		app.getAidlApi().registerNavDrawerItems(mapActivity, adapter);
+
+		adapter.addItem(new ContextMenuItem(DRAWER_DIVIDER_ID)
+				.setLayout(R.layout.drawer_divider));
+
+		adapter.addItem(new ContextMenuItem(DRAWER_CONFIGURE_SCREEN_ID)
+				.setTitleId(R.string.layer_map_appearance, mapActivity)
+				.setIcon(R.drawable.ic_configure_screen_dark)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_config_screen_open");
+					MapActivity.clearPrevActivityIntent();
+					ConfigureScreenFragment.showInstance(mapActivity);
+					return true;
+				}));
+		adapter.addItem(new ContextMenuItem(DRAWER_PLUGINS_ID)
+				.setTitleId(R.string.prefs_plugins, mapActivity)
+				.setIcon(R.drawable.ic_extension_dark)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_plugins_open");
+					PluginsFragment.showInstance(mapActivity.getSupportFragmentManager());
+					return true;
+				}));
+
+		adapter.addItem(new ContextMenuItem(DRAWER_SETTINGS_ID)
+				.setTitle(getString(R.string.shared_string_settings))
+				.setIcon(R.drawable.ic_action_settings)
+				.setListener((uiAdapter, view, item, isChecked) -> {
+					app.logEvent("drawer_settings_new_open");
+					mapActivity.showSettings();
+					return true;
+				}));
+
+
+		return adapter;
+	}
+
+	private ContextMenuAdapter createNormalOptionsMenu(OsmandApplication app, ContextMenuAdapter optionsMenuHelper, boolean nightMode) {
+
+		createProfilesController(app, optionsMenuHelper, nightMode, false);
+
 
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_MY_PLACES_ID)
 				.setTitleId(R.string.shared_string_my_places, mapActivity)
@@ -515,18 +556,6 @@ public class MapActivityActions extends MapActions {
 					R.drawable.ic_action_folder_osm_notes, DRAWER_OSM_EDITS_ID);
 		}
 
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_BACKUP_RESTORE_ID)
-				.setTitleId(R.string.backup_and_restore, mapActivity)
-				.setIcon(R.drawable.ic_action_cloud_upload)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					app.logEvent("drawer_backup_restore_open");
-					if (app.getBackupHelper().isRegistered()) {
-						BackupCloudFragment.showInstance(mapActivity.getSupportFragmentManager());
-					} else {
-						BackupAuthorizationFragment.showInstance(mapActivity.getSupportFragmentManager());
-					}
-					return true;
-				}));
 
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_SEARCH_ID)
 				.setTitleId(R.string.search_button, mapActivity)
@@ -566,97 +595,40 @@ public class MapActivityActions extends MapActions {
 					return true;
 				}));
 
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_CONFIGURE_MAP_ID)
-				.setTitleId(R.string.configure_map, mapActivity)
-				.setIcon(R.drawable.ic_action_layers)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					app.logEvent("drawer_config_map_open");
-					MapActivity.clearPrevActivityIntent();
-					mapActivity.getDashboard().setDashboardVisibility(true, DashboardType.CONFIGURE_MAP, AndroidUtils.getCenterViewCoordinates(view));
-					return false;
-				}));
+		//Divider
+		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_DIVIDER_ID)
+				.setLayout(R.layout.drawer_divider));
 
-		String d = getString(R.string.welmode_download_maps);
-		if (app.getDownloadThread().getIndexes().isDownloadedFromInternet) {
-			List<IndexItem> updt = app.getDownloadThread().getIndexes().getItemsToUpdate();
-			if (updt != null && updt.size() > 0) {
-				d += " (" + updt.size() + ")";
-			}
-		}
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_DOWNLOAD_MAPS_ID)
-				.setTitleId(R.string.welmode_download_maps, null)
-				.setTitle(d).setIcon(R.drawable.ic_type_archive)
+		optionsMenuHelper.addItem(new ContextMenuItem(null)
+				.setTitleId(R.string.shared_string_navigation_firehouse, mapActivity)
+				.setIcon(R.drawable.mm_amenity_fire_station)
 				.setListener((uiAdapter, view, item, isChecked) -> {
-					app.logEvent("drawer_download_maps_open");
-					Intent newIntent = new Intent(mapActivity, app.getAppCustomization().getDownloadActivity());
-					newIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-					mapActivity.startActivity(newIntent);
+					app.logEvent("drawer_firestation_open");
+					MapControlsLayer mapControlsLayer = mapActivity.getMapLayers().getMapControlsLayer();
+					if (mapControlsLayer != null) {
+						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"Caserne de pompiers", null);
+					}
 					return true;
 				}));
 
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_LIVE_UPDATES_ID)
-				.setTitleId(R.string.live_updates, mapActivity)
-				.setIcon(R.drawable.ic_action_map_update)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					LiveUpdatesFragment.showInstance(mapActivity.getSupportFragmentManager(), null);
-					return true;
-				}));
 
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_TRAVEL_GUIDES_ID)
-				.setTitle(getString(R.string.shared_string_travel_guides) + " (Beta)")
-				.setIcon(R.drawable.ic_action_travel)
+		optionsMenuHelper.addItem(new ContextMenuItem(null)
+				.setTitleId(R.string.shared_string_navigation_hospital, mapActivity)
+				.setIcon(R.drawable.mm_healthcare)
 				.setListener((uiAdapter, view, item, isChecked) -> {
-					MapActivity.clearPrevActivityIntent();
-					TravelHelper travelHelper = app.getTravelHelper();
-					travelHelper.initializeDataOnAppStartup();
-					if (!travelHelper.isAnyTravelBookPresent() && !travelHelper.getBookmarksHelper().hasSavedArticles()) {
-						WikivoyageWelcomeDialogFragment.showInstance(mapActivity.getSupportFragmentManager());
-					} else {
-						Intent intent = new Intent(mapActivity, WikivoyageExploreActivity.class);
-						intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-						mapActivity.startActivity(intent);
+					app.logEvent("drawer_hospital_open");
+					MapControlsLayer mapControlsLayer = mapActivity.getMapLayers().getMapControlsLayer();
+					if (mapControlsLayer != null) {
+						mapActivity.showQuickSearch(MapActivity.ShowQuickSearchMode.NEW, false,"hopital",null);
 					}
 					return true;
 				}));
 
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_MEASURE_DISTANCE_ID)
-				.setTitleId(R.string.plan_route, mapActivity)
+				.setTitleId(R.string.shared_string_measure_distance, mapActivity)
 				.setIcon(R.drawable.ic_action_plan_route)
 				.setListener((uiAdapter, view, item, isChecked) -> {
 					StartPlanRouteBottomSheet.showInstance(mapActivity.getSupportFragmentManager());
-					return true;
-				}));
-
-		app.getAidlApi().registerNavDrawerItems(mapActivity, optionsMenuHelper);
-
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_DIVIDER_ID)
-				.setLayout(R.layout.drawer_divider));
-
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_CONFIGURE_SCREEN_ID)
-				.setTitleId(R.string.layer_map_appearance, mapActivity)
-				.setIcon(R.drawable.ic_configure_screen_dark)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					app.logEvent("drawer_config_screen_open");
-					MapActivity.clearPrevActivityIntent();
-					ConfigureScreenFragment.showInstance(mapActivity);
-					return true;
-				}));
-
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_PLUGINS_ID)
-				.setTitleId(R.string.prefs_plugins, mapActivity)
-				.setIcon(R.drawable.ic_extension_dark)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					app.logEvent("drawer_plugins_open");
-					PluginsFragment.showInstance(mapActivity.getSupportFragmentManager());
-					return true;
-				}));
-
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_SETTINGS_ID)
-				.setTitle(getString(R.string.shared_string_settings))
-				.setIcon(R.drawable.ic_action_settings)
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					app.logEvent("drawer_settings_new_open");
-					mapActivity.showSettings();
 					return true;
 				}));
 
@@ -670,6 +642,7 @@ public class MapActivityActions extends MapActions {
 					mapActivity.startActivity(intent);
 					return true;
 				}));
+
 
 		//////////// Others
 		PluginsHelper.registerOptionsMenu(mapActivity, optionsMenuHelper);
@@ -693,25 +666,11 @@ public class MapActivityActions extends MapActions {
 		int icArrowResId = listExpanded ? R.drawable.ic_action_arrow_drop_up : R.drawable.ic_action_arrow_drop_down;
 		int nextMode = listExpanded ? DRAWER_MODE_NORMAL : DRAWER_MODE_SWITCH_PROFILE;
 		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_SWITCH_PROFILE_ID)
-				.setLayout(R.layout.main_menu_drawer_btn_switch_profile)
-				.setIcon(currentMode.getIconRes())
-				.setSecondaryIcon(icArrowResId)
-				.setColor(currentMode.getProfileColor(nightMode))
-				.setTitle(currentMode.toHumanString())
-				.setDescription(modeDescription)
+				.setLayout(R.layout.main_menu_drawer_sdis_header)
 				.setListener((uiAdapter, view, item, isChecked) -> {
 					drawerMode = nextMode;
 					updateDrawerMenu();
 					return false;
-				}));
-		optionsMenuHelper.addItem(new ContextMenuItem(DRAWER_CONFIGURE_PROFILE_ID)
-				.setLayout(R.layout.main_menu_drawer_btn_configure_profile)
-				.setColor(currentMode.getProfileColor(nightMode))
-				.setTitle(getString(R.string.configure_profile))
-				.setListener((uiAdapter, view, item, isChecked) -> {
-					mapActivity.dismissSettingsScreens();
-					BaseSettingsFragment.showInstance(mapActivity, SettingsScreenType.CONFIGURE_PROFILE);
-					return true;
 				}));
 	}
 
@@ -829,22 +788,46 @@ public class MapActivityActions extends MapActions {
 
 		menuItemsListView.setAdapter(simpleListAdapter);
 		menuItemsListView.setOnItemClickListener((parent, view, position, id) -> {
-			mapActivity.dismissCardDialog();
-			boolean hasHeader = menuItemsListView.getHeaderViewsCount() > 0;
-			boolean hasFooter = menuItemsListView.getFooterViewsCount() > 0;
-			if (hasHeader && position == 0 || (hasFooter && position == menuItemsListView.getCount() - 1)) {
-				String drawerLogoParams = app.getAppCustomization().getNavDrawerLogoUrl();
-				if (!Algorithms.isEmpty(drawerLogoParams)) {
-					AndroidUtils.openUrl(mapActivity, Uri.parse(drawerLogoParams), nightMode);
-				}
-			} else {
-				position -= menuItemsListView.getHeaderViewsCount();
-				ContextMenuItem item = cma.getItem(position);
-				ItemClickListener click = item.getItemClickListener();
-				if (click != null && click.onContextMenuClick(simpleListAdapter, view, item, false)) {
-					mapActivity.closeDrawer();
+			if(position != 0) {
+				mapActivity.dismissCardDialog();
+				boolean hasHeader = menuItemsListView.getHeaderViewsCount() > 0;
+				boolean hasFooter = menuItemsListView.getFooterViewsCount() > 0;
+				if (hasHeader && position == 0 || (hasFooter && position == menuItemsListView.getCount() - 1)) {
+					String drawerLogoParams = app.getAppCustomization().getNavDrawerLogoUrl();
+					if (!Algorithms.isEmpty(drawerLogoParams)) {
+						AndroidUtils.openUrl(mapActivity, Uri.parse(drawerLogoParams), nightMode);
+					}
+				} else {
+					position -= menuItemsListView.getHeaderViewsCount();
+					ContextMenuItem item = cma.getItem(position);
+					ItemClickListener click = item.getItemClickListener();
+					if (click != null && click.onContextMenuClick(simpleListAdapter, view, item, false)) {
+						mapActivity.closeDrawer();
+					}
 				}
 			}
+		});
+
+		menuItemsListView.setOnItemLongClickListener((parent, view, position, id) -> {
+			if(position == 0) {
+				mapActivity.dismissCardDialog();
+				boolean hasHeader = menuItemsListView.getHeaderViewsCount() > 0;
+				boolean hasFooter = menuItemsListView.getFooterViewsCount() > 0;
+				if (hasHeader && position == 0 || (hasFooter && position == menuItemsListView.getCount() - 1)) {
+					String drawerLogoParams = app.getAppCustomization().getNavDrawerLogoUrl();
+					if (!Algorithms.isEmpty(drawerLogoParams)) {
+						AndroidUtils.openUrl(mapActivity, Uri.parse(drawerLogoParams), nightMode);
+					}
+				} else {
+					position -= menuItemsListView.getHeaderViewsCount();
+					ContextMenuItem item = cma.getItem(position);
+					ItemClickListener click = item.getItemClickListener();
+					if (click != null && click.onContextMenuClick(simpleListAdapter, view, item, false)) {
+						mapActivity.closeDrawer();
+					}
+				}
+			}
+			return true;
 		});
 	}
 }

@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,14 +44,14 @@ import androidx.fragment.app.FragmentManager;
 import net.osmand.CallbackWithObject;
 import net.osmand.Collator;
 import net.osmand.CollatorStringMatcher.StringMatcherMode;
-import net.osmand.GPXUtilities;
-import net.osmand.GPXUtilities.GPXFile;
-import net.osmand.GPXUtilities.GPXTrackAnalysis;
-import net.osmand.GPXUtilities.Track;
-import net.osmand.GPXUtilities.WptPt;
 import net.osmand.IndexConstants;
 import net.osmand.OsmAndCollator;
 import net.osmand.data.PointDescription;
+import net.osmand.gpx.GPXFile;
+import net.osmand.gpx.GPXTrackAnalysis;
+import net.osmand.gpx.GPXUtilities;
+import net.osmand.gpx.GPXUtilities.Track;
+import net.osmand.gpx.GPXUtilities.WptPt;
 import net.osmand.plus.OsmAndConstants;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
@@ -68,6 +67,7 @@ import net.osmand.plus.mapmarkers.CoordinateInputDialogFragment;
 import net.osmand.plus.myplaces.ui.MoveGpxFileBottomSheet.OnTrackFileMoveListener;
 import net.osmand.plus.plugins.PluginsHelper;
 import net.osmand.plus.plugins.monitoring.OsmandMonitoringPlugin;
+import net.osmand.plus.plugins.monitoring.SavingTrackHelper;
 import net.osmand.plus.plugins.osmedit.OsmEditingPlugin;
 import net.osmand.plus.plugins.osmedit.asynctasks.UploadGPXFilesTask.UploadGpxListener;
 import net.osmand.plus.plugins.osmedit.dialogs.UploadMultipleGPXBottomSheet;
@@ -85,7 +85,6 @@ import net.osmand.plus.track.helpers.GpxDisplayItem;
 import net.osmand.plus.track.helpers.GpxFileLoaderTask;
 import net.osmand.plus.track.helpers.GpxSelectionHelper;
 import net.osmand.plus.track.helpers.GpxSelectionHelper.SelectGpxTaskListener;
-import net.osmand.plus.plugins.monitoring.SavingTrackHelper;
 import net.osmand.plus.track.helpers.SelectedGpxFile;
 import net.osmand.plus.utils.AndroidUtils;
 import net.osmand.plus.utils.ColorUtilities;
@@ -95,14 +94,11 @@ import net.osmand.plus.utils.OsmAndFormatter;
 import net.osmand.plus.utils.UiUtilities;
 import net.osmand.plus.widgets.ctxmenu.ContextMenuAdapter;
 import net.osmand.plus.widgets.ctxmenu.callback.ItemClickListener;
-import net.osmand.plus.widgets.ctxmenu.callback.OnDataChangeUiAdapter;
 import net.osmand.plus.widgets.ctxmenu.data.ContextMenuItem;
 import net.osmand.plus.widgets.popup.PopUpMenuHelper;
 import net.osmand.plus.widgets.popup.PopUpMenuItem;
 import net.osmand.search.core.SearchPhrase.NameStringMatcher;
 import net.osmand.util.Algorithms;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -1112,7 +1108,7 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment implement
 		public void addLocalIndexInfo(GpxInfo info) {
 			String catName;
 			if (info.gpx != null && info.gpx.showCurrentTrack) {
-				catName = info.name;
+				catName = info.getName();
 			} else {
 				// local_indexes_cat_gpx now obsolete in new UI screen which shows only GPX data
 				// catName = app.getString(R.string.local_indexes_cat_gpx) + " " + info.subfolder;
@@ -1484,14 +1480,16 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment implement
 				.setTitleId(R.string.shared_string_share)
 				.setIcon(AndroidUtils.getDrawableForDirection(app, shareIcon))
 				.setOnClickListener(v -> {
-					Activity activity = getActivity();
-					if (activity != null) {
-						Uri fileUri = AndroidUtils.getUriForFile(activity, gpxInfo.file);
-						Intent sendIntent = new Intent(Intent.ACTION_SEND)
-								.putExtra(Intent.EXTRA_STREAM, fileUri)
-								.setType("text/plain")
-								.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-						AndroidUtils.startActivityIfSafe(activity, sendIntent);
+					if (gpxInfo.currentlyRecordingTrack) {
+						GPXFile gpxFile = app.getSavingTrackHelper().getCurrentGpx();
+						GpxUiHelper.saveAndShareCurrentGpx(app, gpxFile);
+					} else if (gpxInfo.gpx == null) {
+						GpxFileLoaderTask.loadGpxFile(gpxInfo.file, getActivity(), result -> {
+							GpxUiHelper.saveAndShareGpxWithAppearance(app, result);
+							return false;
+						});
+					} else {
+						GpxUiHelper.saveAndShareGpxWithAppearance(app, gpxInfo.gpx);
 					}
 				})
 				.create()
@@ -1651,70 +1649,6 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment implement
 		}
 		allGpxAdapter.notifyDataSetInvalidated();
 		return true;
-	}
-
-	public static class GpxInfo {
-		public boolean currentlyRecordingTrack;
-		public GPXFile gpx;
-		public File file;
-		public String subfolder;
-
-		private String name;
-		private int sz = -1;
-		private String fileName;
-		private boolean corrupted;
-
-		public GpxInfo() {
-		}
-
-		public GpxInfo(GPXFile file, String name) {
-			this.gpx = file;
-			this.name = name;
-		}
-
-		public String getName() {
-			if (name == null) {
-				name = GpxUiHelper.getGpxTitle(file.getName());
-			}
-			return name;
-		}
-
-		public boolean isCorrupted() {
-			return corrupted;
-		}
-
-		public int getSize() {
-			if (sz == -1) {
-				if (file == null) {
-					return -1;
-				}
-				sz = (int) ((file.length() + 512));
-			}
-			return sz;
-		}
-
-		public long getFileDate() {
-			if (file == null) {
-				return 0;
-			}
-			return file.lastModified();
-		}
-
-		public void setGpx(GPXFile gpx) {
-			this.gpx = gpx;
-		}
-
-		@NonNull
-		public String getFileName() {
-			if (fileName != null) {
-				return fileName;
-			} else if (file == null) {
-				return "";
-			} else {
-				fileName = file.getName();
-				return fileName;
-			}
-		}
 	}
 
 	public interface GpxInfoViewCallback {
